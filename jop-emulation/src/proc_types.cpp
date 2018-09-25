@@ -2,10 +2,9 @@
 // Created by Joseph on 22/09/2018.
 //
 
-#include <boost/format.hpp>
 #include "proc_types.h"
-#include "constants.h"
-#include <iostream>
+#include "helpers.h"
+#include <boost/format.hpp>
 
 namespace jop {
     addrtype addressFromData(std::vector<dtype> input_data) {
@@ -28,28 +27,33 @@ namespace jop {
         return returnee;
     }
 
-    std::vector<dtype> dataFromBytes(std::vector<byte> bytes) {
+    std::vector<dtype> dataFromBytes(const std::vector<byte> &bytes) {
         if (bytes.size() % data_byte_scale != 0) {
             throw proc_err("Data/byte vector length mismatch");
         } else {
             std::vector<dtype> data;
-            int j;
-            for (int i = 0; i < bytes.size(); i+=data_byte_scale) {
-                data.push_back(0);
+            data.reserve(bytes.size()/data_byte_scale);
+            int j, i;
+            dtype temp;
+            for (i = 0; i < bytes.size(); i+=data_byte_scale) {
+                temp = 0;
                 for (j=0; j < data_byte_scale; j++) {
-                    data[i] <<= 8;
-                    data[i] |= bytes[i*data_byte_scale + j];
+                    temp <<= 8;
+                    temp |= bytes[i + j];
                 }
+                data.push_back(temp);
             }
             return data;
         }
     }
 
-    std::vector<byte> bytesFromData(std::vector<dtype> data) {
-        std::vector<byte> bytes(data.size()*data_byte_scale);
-        for (int j = 0; j < data.size(); j++) {
-            for (int i = 0; i < data_byte_scale; i++) {
-                bytes[j*data_byte_scale + (data_byte_scale - 1 - i)] = static_cast<byte>(data[j] >> (i * 8));
+    std::vector<byte> bytesFromData(const std::vector<dtype> &data) {
+        std::vector<byte> bytes;
+        bytes.reserve(data.size() * data_byte_scale);
+        int i;
+        for (auto snum: data) {
+            for (i = data_byte_scale-1; i >= 0; i--) {
+                bytes.push_back(static_cast<byte>((snum & (0xFF << (i * 8))) >> (8 * i)));
             }
         }
         return bytes;

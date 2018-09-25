@@ -4,12 +4,10 @@
 //
 
 #ifndef JOP_CONSTANTS_H
-
 #define JOP_CONSTANTS_H
 
 #include <exception>
 #include <string>
-#include "boost/format.hpp"
 
 namespace jop {
 
@@ -24,11 +22,6 @@ namespace jop {
         }
 
     };
-
-
-    ProcessorException proc_err(boost::format msg);
-
-    ProcessorException proc_err(std::string msg);
 
 }
 #endif //JOP_CONSTANTS_H

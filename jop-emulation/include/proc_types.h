@@ -6,10 +6,9 @@
 #define JOP_PROC_TYPES_H
 
 #include <vector>
-#include <math.h>
 
 namespace jop {
-    typedef unsigned char dtype;
+    typedef unsigned short dtype;
     typedef int addrtype;
     typedef unsigned char byte;
 
@@ -30,8 +29,8 @@ namespace jop {
     addrtype addressFromData(std::vector<dtype> input_data);
     std::vector<dtype> dataFromAddress(addrtype address);
 
-    std::vector<dtype> dataFromBytes(std::vector<byte> bytes);
-    std::vector<byte> bytesFromData(std::vector<dtype> data);
+    std::vector<dtype> dataFromBytes(const std::vector<byte> &bytes);
+    std::vector<byte> bytesFromData(const std::vector<dtype> &data);
 
 }
 

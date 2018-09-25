@@ -3,8 +3,8 @@
 //
 
 #include "MemoryHandler.h"
-#include "constants.h"
-#include <iostream>
+#include "helpers.h"
+
 
 namespace jop {
     MemoryHandler::MemoryHandler(int start_address, int length) : start_address(start_address) {
@@ -38,8 +38,8 @@ namespace jop {
 
     dtype RAMSegment::fetch(int address) {
         if (holds(address)) {
-
-            return mem[address - start_address];
+            auto x = mem[address - start_address];
+            return x;
 
         } else {
             throw proc_err("Memory Reference out of bounds.");

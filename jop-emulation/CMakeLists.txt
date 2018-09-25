@@ -3,13 +3,21 @@ project(jopemulation VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(Boost REQUIRED program_options filesystem)
-include_directories(${Boost_INCLUDE_DIRS})
+find_package(Boost REQUIRED)
 
-add_library(jopemulation constants.cpp InputOutputHandler.cpp MemoryHandler.cpp Processor.cpp proc_types.h proc_types.cpp)
+add_library(jopemulation src/constants.cpp src/InputOutputHandler.cpp src/MemoryHandler.cpp src/Processor.cpp src/proc_types.cpp src/helpers.cpp)
 
-target_link_libraries(jopemulation ${Boost_LIBRARIES})
-# Make sure the compiler can find include files for our Hello library
-# when other libraries or executables link to Hello
-target_include_directories (jopemulation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+#Set target properties
+target_include_directories(jopemulation
+        PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        )
+
+
+target_link_libraries(jopemulation
+        PRIVATE Boost::boost)
 

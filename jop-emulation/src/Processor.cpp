@@ -3,10 +3,9 @@
 //
 
 #include "Processor.h"
-#include <boost/optional.hpp>
 #include <boost/format.hpp>
-#include <memory>
-#include <constants.h>
+#include "helpers.h"
+
 
 namespace jop {
 

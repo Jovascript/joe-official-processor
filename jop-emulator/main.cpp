@@ -52,12 +52,22 @@ int main(int ac, char* av[]) {
                 std::copy(std::istreambuf_iterator<char>(input),
                            std::istreambuf_iterator<char>(),
                                    std::back_inserter(vec));
-                /*cout << "Vector size: " << vec.size() << endl;
-                cout << "File size: " << fs::file_size(pt) << endl; */
+                cout << "Vector size: " << vec.size() << endl;
+                cout << "File size: " << fs::file_size(pt) << endl;
                 // Create memory holder
                 auto mem = make_shared<jop::RAMSegment>(0, vm["allocated-memory"].as<int>());
                 // Have to copy to reinterpret vector<char> to vector<jop::byte>
-                mem->load(static_cast<int>(vec.size()), jop::dataFromBytes(vector<jop::byte>(vec.begin(), vec.end())).data());
+                auto tempD = vector<jop::byte>(vec.begin(), vec.end());
+                for (auto d: tempD) {
+                    cout << hex << int(d) << " ";
+                }
+                cout << endl;
+                auto tempL = jop::dataFromBytes(tempD);
+                for (auto d: tempL) {
+                    cout << hex << int(d) << " ";
+                }
+                cout << endl;
+                mem->load(static_cast<int>(vec.size()), tempL.data());
                 auto iome = make_shared<jop::StandardIOHandler>();
                 jop::Processor x;
                 x.add_memory(static_pointer_cast<jop::MemoryHandler, jop::RAMSegment>(mem));
@@ -65,6 +75,9 @@ int main(int ac, char* av[]) {
                 try {
                     x.run();
                 } catch(jop::ProcessorException &e) {
+                    cout << "Processor Exception:" << endl;
+                    cout << e.what();
+                } catch(exception &e) {
                     cout << e.what();
                 }
 
@@ -80,6 +93,7 @@ int main(int ac, char* av[]) {
         cerr << x.what() << endl;
         return 1;
     }
+
 
     return 0;
 }

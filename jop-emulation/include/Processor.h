@@ -5,7 +5,7 @@
 #ifndef JOP_PROCESSOR_H
 #define JOP_PROCESSOR_H
 
-#include <vector>
+#include <memory>
 #include "InputOutputHandler.h"
 #include "MemoryHandler.h"
 #include "proc_types.h"

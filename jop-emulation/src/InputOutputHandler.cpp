@@ -3,9 +3,9 @@
 //
 
 #include "InputOutputHandler.h"
-#include "proc_types.h"
 #include <iostream>
 #include <limits>
+
 namespace jop {
     dtype StandardIOHandler::handle_input() {
         while (true) {
