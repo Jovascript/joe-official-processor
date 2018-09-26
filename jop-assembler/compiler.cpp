@@ -17,7 +17,7 @@ bool AssemblyInstruction::isResolved() const {
 }
 
 int AssemblyInstruction::inst_size() const {
-    return isResolved() ? static_cast<int>(1 + data.size()) : 1 + sizeof(jop::addrtype);
+    return isResolved() ? static_cast<int>(1 + data.size()) : 1 + jop::addr_data_scale;
 }
 
 

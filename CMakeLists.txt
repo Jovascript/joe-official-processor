@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10)
 project(JOP)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -6,4 +6,4 @@ set(CMAKE_CXX_STANDARD 14)
 add_subdirectory(jop-emulation)
 add_subdirectory(jop-emulator)
 add_subdirectory(jop-assembler)
-add_subdirectory(test)
+add_subdirectory(jop-code)
