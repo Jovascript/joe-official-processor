@@ -28,17 +28,17 @@ find_package_handle_standard_args(ANTLR
         ANTLR_INCLUDE_DIR
         )
 
-if(ANTLR_FOUND)
-    message(STATUS "ANTLR Include Dir: ${ANTLR_INCLUDE_DIR}")
+if (ANTLR_FOUND)
     set(ANTLR_LIBRARIES ${ANTLR_LIBRARY})
     set(ANTLR_INCLUDE_DIRS ${ANTLR_INCLUDE_DIR})
-endif()
+endif ()
 
-if(ANTLR_FOUND AND NOT TARGET ANTLR::runtime)
+if (ANTLR_FOUND AND NOT TARGET ANTLR::runtime)
     add_library(ANTLR::runtime UNKNOWN IMPORTED)
     set_target_properties(ANTLR::runtime PROPERTIES
             IMPORTED_LOCATION "${ANTLR_LIBRARY}"
             INTERFACE_INCLUDE_DIRECTORIES "${ANTLR_INCLUDE_DIR}"
             )
-endif()
+
+endif ()
 
