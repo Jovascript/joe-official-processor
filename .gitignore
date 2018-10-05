@@ -2,3 +2,4 @@
 cmake-build-debug/*
 file.binary
 test.asm
+gen/*

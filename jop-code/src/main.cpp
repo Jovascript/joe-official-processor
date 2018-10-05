@@ -3,25 +3,35 @@
 //
 
 #include <antlr4-runtime.h>
-#include "TLexer.h"
-#include "TParser.h"
+#include "JScriptLexer.h"
+#include "JScriptParser.h"
+
 
 using namespace antlr4;
-using namespace T;
+using namespace JScript;
 
 int main() {
     ANTLRInputStream x;
-    ANTLRInputStream input(u8"🍴 = 🍐 + \"😎\";(((x * π))) * µ + ∰; a + (x * (y ? 0 : 1) + z);");
-    TLexer lexer(&input);
+    ANTLRInputStream input(R"(
+int z()
+
+void x(int y,
+string l) {
+    bool m = y/7
+}
+y = 6
+str = "hello"
+int ll = x(2,3)
+   )");
+    JScriptLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
 
     tokens.fill();
 
-    TParser parser(&tokens);
+    JScriptParser parser(&tokens);
     tree::ParseTree* tree = parser.main();
 
     std::cout << tree->toStringTree(&parser) << std::endl << std::endl;
-
     return 0;
 }
 
