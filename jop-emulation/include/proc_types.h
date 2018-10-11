@@ -9,7 +9,7 @@
 
 namespace jop {
     typedef unsigned short dtype;
-    typedef int addrtype;
+    typedef unsigned short addrtype;
     typedef unsigned char byte;
 
     const int addr_data_scale = sizeof(addrtype)/ sizeof(dtype);

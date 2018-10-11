@@ -5,31 +5,64 @@
 #ifndef JOP_COMPILER_H
 #define JOP_COMPILER_H
 
-#include <string>
-#include <fstream>
+
 #include <jopemulation.h>
+#include <unordered_map>
 
-class CompilerError : public std::exception {
+#include "compilation_helpers.h"
+
+class AddressAllocationHandler {
 private:
-    std::string message_;
+    std::unordered_map<std::string, std::shared_ptr<AddressAllocation>> labels;
 public:
-    explicit CompilerError(std::string message);
+    AddressAllocationHandler();
+    std::shared_ptr<AddressAllocation> getLabelDestination(std::string label);
+    void registerLabelLocation(std::string label, jop::addrtype loc);
+};
 
-    const char *what() const throw() override {
-        return message_.c_str();
-    }
+class CodeUnit {
+public:
+    virtual int get_size() = 0;
+    virtual std::vector<jop::dtype> generate_data() = 0;
+    virtual bool is_resolved() = 0;
+    virtual bool resolve() = 0;
+    std::string label;
+};
+
+class AssemblyInstruction: public CodeUnit {
+public:
+
+    int get_size() override;
+
+    std::vector<jop::dtype> generate_data() override;
+
+    bool is_resolved() override;
+
+    bool resolve() override;
+
+    std::shared_ptr<AddressAllocation> addressReference;
+    jop::Instruction inst;
+    jop::dtype reg;
+    std::vector<jop::dtype> data;
+    bool uses_register = false;
+
+private:
+    bool resolved;
 
 };
 
-struct AssemblyInstruction {
-    // Can be resolved or not resolved.
-    jop::dtype inst;
-    std::string label;
+class DataBlock: public CodeUnit {
+public:
+    int get_size() override;
+
+    std::vector<jop::dtype> generate_data() override;
+
+    bool is_resolved() override;
+
+    bool resolve() override;
+
     std::vector<jop::dtype> data;
-    // The label it references.
-    std::string labelRef;
-    bool isResolved() const;
-    int inst_size() const;
+
 };
 
 std::vector<jop::byte> compile(std::shared_ptr<std::ifstream> f);

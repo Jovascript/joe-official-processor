@@ -53,10 +53,10 @@ namespace jop {
                     halted = true;
                     break;
                 case Instruction::MVMR:
-                    registers[reg] = fetch_from_memory(data[0]);
+                    registers[reg] = fetch_from_memory(addressFromData(data));
                     break;
                 case Instruction::MVRM:
-                    set_to_memory(data[0], registers[reg]);
+                    set_to_memory(addressFromData(data), registers[reg]);
                     break;
                 case Instruction::MVRR:
                     registers[reg] = registers[data[0]];
