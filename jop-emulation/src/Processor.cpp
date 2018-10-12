@@ -23,9 +23,20 @@ namespace jop {
         while (!halted) {
             // Get new instruction
             dtype temp = fetch_from_memory(pc);
-            // Separate into register(if needed) and instruction(0-31) - will extend if needed.
-            auto reg = static_cast<dtype>(temp & 0b00000111);
-            auto inst = static_cast<Instruction>(temp >> 3);
+            // Separate into register(if needed) and instruction.
+
+            // Register is bottom byte
+            auto reg = static_cast<unsigned char>(temp);
+            if (reg > 7) {
+                throw proc_err("Register value too large.");
+            }
+
+            // Instruction is 2nd byte, excluding last bit.
+            auto inst = static_cast<Instruction>((temp >> 8) & 0b0111111);
+
+            // Top bit is whether, if the instruction takes a mem address, it is from a register.
+            bool addr_from_reg = static_cast<bool>((temp >> (8 + 7)) & 1);
+
             // Increment program counter
             pc++;
 
@@ -53,10 +64,10 @@ namespace jop {
                     halted = true;
                     break;
                 case Instruction::MVMR:
-                    registers[reg] = fetch_from_memory(addressFromData(data));
+                    registers[reg] = fetch_from_memory(data[0], addr_from_reg);
                     break;
                 case Instruction::MVRM:
-                    set_to_memory(addressFromData(data), registers[reg]);
+                    set_to_memory(data[0], registers[reg], addr_from_reg);
                     break;
                 case Instruction::MVRR:
                     registers[reg] = registers[data[0]];
@@ -86,11 +97,27 @@ namespace jop {
                     registers[0] = ~registers[0];
                     break;
                 case Instruction::JP:
-                    pc = addressFromData(data);
+                    if (addr_from_reg) {
+                        if (data[0] < 8) {
+                            pc = registers[data[0]];
+                        } else {
+                            throw proc_err("Register too large.");
+                        }
+                    } else {
+                        pc = data[0];
+                    }
                     break;
                 case Instruction::JPZ:
                     if (registers[0] == 0) {
-                        pc = addressFromData(data);
+                        if (addr_from_reg) {
+                            if (data[0] < 8) {
+                                pc = registers[data[0]];
+                            } else {
+                                throw proc_err("Register too large.");
+                            }
+                        } else {
+                            pc = data[0];
+                        }
                     }
                     break;
                 case Instruction::OUT:
@@ -105,7 +132,15 @@ namespace jop {
     }
 
 
-    dtype Processor::fetch_from_memory(int address) {
+    dtype Processor::fetch_from_memory(int address, bool from_reg) {
+        if (from_reg) {
+            if (address < 8) {
+
+                address = registers[address];
+            } else {
+                throw proc_err("Register too large.");
+            }
+        }
         for (const auto &handler : handlers) {
             if (handler->holds(address)) {
                 return handler->fetch(address);
@@ -114,7 +149,14 @@ namespace jop {
         throw proc_err(boost::format("Memory out of Bounds - No memory device exists at address %X") % address);
     }
 
-    void Processor::set_to_memory(int address, dtype data) {
+    void Processor::set_to_memory(int address, dtype data, bool from_reg) {
+        if (from_reg) {
+            if (address < 8) {
+                address = registers[address];
+            } else {
+                throw proc_err("Register too large.");
+            }
+        }
         for (auto &handler: handlers) {
             if (handler->holds(address)) {
                 handler->write(address, data);
@@ -131,7 +173,6 @@ namespace jop {
             case Instruction::MVRM:
             case Instruction::JP:
             case Instruction::JPZ:
-                return sizeof(addrtype)/ sizeof(dtype);
             case Instruction::MVLR:
                 return 1;
             default:

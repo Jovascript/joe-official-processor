@@ -7,25 +7,6 @@
 #include <boost/format.hpp>
 
 namespace jop {
-    addrtype addressFromData(std::vector<dtype> input_data) {
-        if (input_data.size() > sizeof(addrtype)) {
-            throw proc_err(boost::format("Address cannot be length %u.") % input_data.size());
-        } else {
-            addrtype x = 0;
-            for (dtype n: input_data) {
-                x <<= 8* sizeof(dtype); // 8 Bits to byte
-                x |= n;
-            }
-            return x;
-        }
-    }
-
-    std::vector<dtype> dataFromAddress(addrtype address) {
-        std::vector<dtype> returnee(static_cast<unsigned long long int>(addr_data_scale));
-        for (int i = 0; i < addr_data_scale; i++)
-            returnee[addr_data_scale - 1 - i] = static_cast<dtype>(address >> (sizeof(dtype) * i * 8));
-        return returnee;
-    }
 
     std::vector<dtype> dataFromBytes(const std::vector<byte> &bytes) {
         if (bytes.size() % data_byte_scale != 0) {

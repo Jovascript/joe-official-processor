@@ -8,7 +8,7 @@
 CompilerError::CompilerError(std::string message) : message_(std::move(message)) {}
 
 
-AddressAllocation::AddressAllocation(const std::string &label, bool resolved, jop::addrtype address) : label(label),
+AddressAllocation::AddressAllocation(const std::string &label, bool resolved, jop::dtype address) : label(label),
                                                                                                        resolved(
                                                                                                                resolved),
                                                                                                        address(address) {}

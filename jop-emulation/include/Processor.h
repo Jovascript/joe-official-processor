@@ -43,9 +43,9 @@ namespace jop {
         void run();
 
     private:
-        dtype fetch_from_memory(int address);
+        dtype fetch_from_memory(int address, bool from_reg = false);
 
-        void set_to_memory(int address, dtype data);
+        void set_to_memory(int address, dtype data, bool from_reg = false);
 
         dtype registers[8];
         std::vector<std::shared_ptr<MemoryHandler>> handlers;

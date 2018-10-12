@@ -41,7 +41,8 @@ std::string lexer::format_expected(const std::string &message) {
 
 void lexer::consumeToken() {
     skip_whitespace();
-    auto start_pos = current_pos;
+    auto start_pos = last_pos;
+
     if (next_char == '#' or next_char == '0') {
         std::string numberS;
         if (next_char == '#') {
@@ -110,8 +111,8 @@ void lexer::consumeToken() {
         cry("Unexpected character");
     }
     next_token.start_pos = start_pos;
-    next_token.end_pos = current_pos;
-    next_token.parsed_text = get_text_between_pos(start_pos, current_pos);
+    next_token.end_pos = last_pos;
+    next_token.parsed_text = get_text_between_pos(start_pos, last_pos);
 
 }
 
@@ -128,6 +129,7 @@ void lexer::cry(const std::string &message) {
 }
 
 void lexer::consumeChar() {
+    last_pos = current_pos;
     int c = _stream->get();
     if (c == EOF) {
         next_char = FILE_END;

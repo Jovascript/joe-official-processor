@@ -64,6 +64,7 @@ private:
 
     std::shared_ptr<std::istream> _stream;
     file_position current_pos;
+    file_position last_pos;
 };
 
 

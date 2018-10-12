@@ -6,13 +6,14 @@
 #define JOP_PROC_TYPES_H
 
 #include <vector>
+#include <limits>
 
 namespace jop {
     typedef unsigned short dtype;
-    typedef unsigned short addrtype;
     typedef unsigned char byte;
 
-    const int addr_data_scale = sizeof(addrtype)/ sizeof(dtype);
+    const long MAX_DTYPE = std::numeric_limits<dtype>::max();
+
     const int data_byte_scale = sizeof(dtype)/ sizeof(byte);
 
     template <typename T>
@@ -25,9 +26,6 @@ namespace jop {
         }
         return data;
     }
-
-    addrtype addressFromData(std::vector<dtype> input_data);
-    std::vector<dtype> dataFromAddress(addrtype address);
 
     std::vector<dtype> dataFromBytes(const std::vector<byte> &bytes);
     std::vector<byte> bytesFromData(const std::vector<dtype> &data);

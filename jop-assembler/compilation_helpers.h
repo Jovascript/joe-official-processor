@@ -23,11 +23,11 @@ public:
 };
 
 struct AddressAllocation {
-    AddressAllocation(const std::string &label, bool resolved, jop::addrtype address);
+    AddressAllocation(const std::string &label, bool resolved, jop::dtype address);
 
     std::string label;
     bool resolved;
-    jop::addrtype address;
+    jop::dtype address;
 };
 
 

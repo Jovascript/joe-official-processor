@@ -4,6 +4,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <fstream>
+#include <boost/format.hpp>
 #include "compiler.h"
 
 
@@ -29,6 +30,7 @@ public:
             if (!ln->label.empty()) {
                 addr_manage.registerLabelLocation(ln->label, current_address);
             }
+
             current_address += ln->get_size();
         }
 
@@ -48,17 +50,16 @@ public:
     std::unique_ptr<CodeUnit> parse_instruction() {
         bool directive = false;
         std::string label;
-        auto tokn = readIdentifier();
-        auto n = tokn.identifier;
+        auto inst_tok = readIdentifier();
 
 
         if (_lexer.parse_token(Token::tok_colon)) {
-            label = n;
+            label = inst_tok.identifier;
             // Parse the identifier
 
-            n = readIdentifier().identifier;
-
+            inst_tok = readIdentifier();
         }
+        auto n = inst_tok.identifier;
         if (n[0] == '.') {
             directive = true;
         }
@@ -74,11 +75,12 @@ public:
                     x->data.push_back(static_cast<unsigned short &&>(d->literal));
                 }
             } else {
-                cry("Expected directive");
+                cry("Expected directive", inst_tok);
             }
             return x;
         } else {
             auto x = std::make_unique<AssemblyInstruction>();
+
             if (!label.empty()) {
                 x->label = label;
             }
@@ -92,8 +94,7 @@ public:
                         x->data.push_back(tok.reg);
                         break;
                     case Token::tok_literal: {
-                        auto dat = jop::dataFromAddress(static_cast<jop::addrtype>(tok.literal));
-                        x->data.insert(x->data.end(), dat.begin(), dat.end());
+                        x->data.push_back(static_cast<jop::dtype>(tok.literal));
                         break;
                     }
                     case Token::tok_identifier:
@@ -118,8 +119,7 @@ public:
                         x->data.push_back(tok.reg);
                         break;
                     case Token::tok_literal: {
-                        auto dat = jop::dataFromAddress(static_cast<jop::addrtype>(tok.literal));
-                        x->data.insert(x->data.end(), dat.begin(), dat.end());
+                        x->data.push_back(static_cast<jop::dtype>(tok.literal));
                         break;
                     }
                     case Token::tok_identifier:
@@ -139,15 +139,15 @@ public:
                 } else {
                     try {
                         auto tok = readLiteralSpace();
-                        if (tok.type == Token::tok_literal) {
+                        if (tok.type == Token::tok_identifier) {
                             x->addressReference = addr_manage.getLabelDestination(tok.identifier);
                         } else {
                             // Is literal
-                            x->data.push_back(static_cast<unsigned short &&>(tok.literal));
+                            x->data.push_back(static_cast<jop::dtype>(tok.literal));
                         }
                         x->inst = jop::Instruction::MVLR;
                     } catch (CompilerError &error1) {
-                        throw CompilerError(_lexer.format_expected("Expected register or literal(value or label)"));
+                        cry("Expected register or literal(value or label)", _lexer.next_token);
                     }
                 }
 
@@ -189,8 +189,7 @@ public:
                         x->data.push_back(tok.reg);
                         break;
                     case Token::tok_literal: {
-                        auto dat = jop::dataFromAddress(static_cast<jop::addrtype>(tok.literal));
-                        x->data.insert(x->data.end(), dat.begin(), dat.end());
+                        x->data.push_back(static_cast<jop::dtype>(tok.literal));
                         break;
                     }
                     case Token::tok_identifier:
@@ -203,7 +202,7 @@ public:
                 x->inst = jop::Instruction::INP;
             } else {
 
-                cry("Expecting instruction");
+                cry("Expecting instruction", inst_tok);
             }
 
             return x;
@@ -218,7 +217,7 @@ public:
         } else if (auto lit = _lexer.parse_token(Token::tok_literal)) {
             return *lit;
         } else {
-            cry("Expected address(identifier, register or literal)");
+            cry("Expected address(identifier, register or literal)", _lexer.next_token);
         }
     }
 
@@ -228,7 +227,7 @@ public:
         } else if (auto ident = _lexer.parse_token(Token::tok_identifier)) {
             return *ident;
         } else {
-            cry("Expected value(identifier or literal)");
+            cry("Expected value(identifier or literal)", _lexer.next_token);
         }
     }
 
@@ -236,7 +235,7 @@ public:
         if (auto reg = _lexer.parse_token(Token::tok_reg)) {
             return *reg;
         } else {
-            cry("Expected register");
+            cry("Expected register", _lexer.next_token);
         }
     }
 
@@ -244,13 +243,20 @@ public:
         if (auto ident = _lexer.parse_token(Token::tok_identifier)) {
             return *ident;
         } else {
-            cry("Expected identifier");
+            cry("Expected identifier", _lexer.next_token);
         }
     }
 
     void cry(const std::string &message) {
         auto x = _lexer.format_expected(message);
+
         throw CompilerError(x);
+    }
+
+    void cry(const std::string &message, Token offending_token) {
+        boost::format fstring("%s, got '%s' at %u:%u");
+        fstring % message % offending_token.parsed_text % offending_token.start_pos.line_no % offending_token.start_pos.col_no;
+        throw CompilerError(fstring.str());
     }
 
 private:
@@ -271,8 +277,11 @@ AddressAllocationHandler::AddressAllocationHandler() = default;
 
 
 int AssemblyInstruction::get_size() {
+
     // Hack assuming only data is address in addressed circumstances
-    return is_resolved() ? static_cast<int>(1 + data.size()) : 1 + jop::addr_data_scale;
+    auto x = is_resolved() ? static_cast<int>(1 + data.size()) : 2;
+
+    return x;
 }
 
 std::vector<jop::dtype> AssemblyInstruction::generate_data() {
@@ -281,7 +290,7 @@ std::vector<jop::dtype> AssemblyInstruction::generate_data() {
     // Real top byte = instruction, lower byte is register
     // Top bit is whether register is used as address or literal value
     jop::dtype instruction_byte = (static_cast<jop::dtype>(inst) << 8) | reg;
-    instruction_byte |= uses_register << 16;
+    instruction_byte |= uses_register << 15;
     x.push_back(instruction_byte);
     if (!data.empty()) {
         x.insert(x.end(), data.begin(), data.end());
@@ -290,14 +299,18 @@ std::vector<jop::dtype> AssemblyInstruction::generate_data() {
 }
 
 bool AssemblyInstruction::is_resolved() {
-    return resolved;
+    return addressReference == nullptr || resolved;
 }
 
 bool AssemblyInstruction::resolve() {
-    if (addressReference != nullptr && addressReference->resolved) {
-        auto x = jop::dataFromAddress(addressReference->address);
-        data.insert(data.end(), x.begin(), x.end());
-        resolved = true;
+    if (addressReference != nullptr) {
+        if (addressReference->resolved) {
+            auto x = addressReference->address;
+            data.push_back(x);
+            resolved = true;
+        } else {
+            throw CompilerError("Label " + addressReference->label + " is not defined.");
+        }
     }
 }
 
@@ -312,7 +325,7 @@ std::shared_ptr<AddressAllocation> AddressAllocationHandler::getLabelDestination
     }
 }
 
-void AddressAllocationHandler::registerLabelLocation(std::string label, jop::addrtype loc) {
+void AddressAllocationHandler::registerLabelLocation(std::string label, jop::dtype loc) {
     auto search = labels.find(label);
     if (search != labels.end()) {
         if (search->second->resolved) {

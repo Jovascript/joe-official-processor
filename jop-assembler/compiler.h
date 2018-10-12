@@ -17,7 +17,7 @@ private:
 public:
     AddressAllocationHandler();
     std::shared_ptr<AddressAllocation> getLabelDestination(std::string label);
-    void registerLabelLocation(std::string label, jop::addrtype loc);
+    void registerLabelLocation(std::string label, jop::dtype loc);
 };
 
 class CodeUnit {
@@ -40,7 +40,7 @@ public:
 
     bool resolve() override;
 
-    std::shared_ptr<AddressAllocation> addressReference;
+    std::shared_ptr<AddressAllocation> addressReference = nullptr;
     jop::Instruction inst;
     jop::dtype reg;
     std::vector<jop::dtype> data;
