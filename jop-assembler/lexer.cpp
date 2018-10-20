@@ -69,7 +69,7 @@ void lexer::consumeToken() {
             errno = 0;
             long x = strtol(numberS.c_str(), nullptr, 10);
             // Since we did the digits ourselves, it is guaranteed to have produced a number.
-            if (errno == ERANGE or x > INT_MAX) {
+            if (errno == ERANGE or x > std::numeric_limits<jop::dtype>::max()) {
                 cry("Number too large");
             } else {
                 next_token = Token(static_cast<int>(x), false);

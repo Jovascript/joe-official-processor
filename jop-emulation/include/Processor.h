@@ -47,7 +47,11 @@ namespace jop {
 
         void set_to_memory(int address, dtype data, bool from_reg = false);
 
-        dtype registers[8];
+        dtype get_register_value(int reg);
+
+        void set_register(int reg, dtype value);
+
+        dtype registers[7];
         std::vector<std::shared_ptr<MemoryHandler>> handlers;
         std::shared_ptr<InputOutputHandler> iohandler;
 
@@ -56,7 +60,6 @@ namespace jop {
     };
 
     int instruction_requires_data(Instruction m);
-    bool instruction_requires_register(Instruction m);
 
 }
 #endif //JOP_PROCESSOR_H

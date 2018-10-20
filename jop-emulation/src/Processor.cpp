@@ -4,6 +4,8 @@
 
 #include "Processor.h"
 #include <boost/format.hpp>
+#include <Processor.h>
+#include <iostream>
 #include "helpers.h"
 
 
@@ -20,16 +22,15 @@ namespace jop {
 
     void Processor::run() {
         bool halted = false;
+        std::clock_t start = std::clock();
         while (!halted) {
             // Get new instruction
             dtype temp = fetch_from_memory(pc);
             // Separate into register(if needed) and instruction.
 
             // Register is bottom byte
+            // reg is only used once checked, so no need to check now
             auto reg = static_cast<unsigned char>(temp);
-            if (reg > 7) {
-                throw proc_err("Register value too large.");
-            }
 
             // Instruction is 2nd byte, excluding last bit.
             auto inst = static_cast<Instruction>((temp >> 8) & 0b0111111);
@@ -41,16 +42,8 @@ namespace jop {
             pc++;
 
             std::vector<dtype> data;
-            if (instruction_requires_register(inst)) {
-                // Get the byte
-                dtype d = fetch_from_memory(pc);
-                if (d < 8) {
-                    data.push_back(d);
-                } else {
-                    throw proc_err(boost::format("Unknown register %d") % d);
-                }
-                pc++;
-            }
+
+            // MVRR takes a register
             for (int i = 0; i < instruction_requires_data(inst); i++) {
                 // Get another byte
                 data.push_back(fetch_from_memory(pc));
@@ -64,45 +57,42 @@ namespace jop {
                     halted = true;
                     break;
                 case Instruction::MVMR:
-                    registers[reg] = fetch_from_memory(data[0], addr_from_reg);
+                    set_register(reg, fetch_from_memory(data[0], addr_from_reg));
                     break;
                 case Instruction::MVRM:
-                    set_to_memory(data[0], registers[reg], addr_from_reg);
+                    set_to_memory(data[0], get_register_value(reg), addr_from_reg);
                     break;
                 case Instruction::MVRR:
-                    registers[reg] = registers[data[0]];
+                    set_register(reg, get_register_value(data[0]));
                     break;
                 case Instruction::MVLR:
-                    registers[reg] = data[0];
+                    set_register(reg, data[0]);
                     break;
                 case Instruction::ADD:
-                    registers[0] += registers[reg];
+                    registers[0] += get_register_value(reg);
                     break;
                 case Instruction::SUB:
-                    registers[0] -= registers[reg];
+                    registers[0] -= get_register_value(reg);
                     break;
                 case Instruction::MUL:
-                    registers[0] *= registers[reg];
+                    registers[0] *= get_register_value(reg);
                     break;
                 case Instruction::DIV:
-                    registers[0] /= registers[reg];
+                    registers[0] /= get_register_value(reg);
                     break;
                 case Instruction::AND:
-                    registers[0] &= registers[reg];
+                    registers[0] &= get_register_value(reg);
                     break;
                 case Instruction::OR:
-                    registers[0] |= registers[reg];
+                    registers[0] |= get_register_value(reg);
                     break;
                 case Instruction::NOT:
                     registers[0] = ~registers[0];
                     break;
                 case Instruction::JP:
                     if (addr_from_reg) {
-                        if (data[0] < 8) {
-                            pc = registers[data[0]];
-                        } else {
-                            throw proc_err("Register too large.");
-                        }
+                        pc = get_register_value(data[0]);
+
                     } else {
                         pc = data[0];
                     }
@@ -110,11 +100,7 @@ namespace jop {
                 case Instruction::JPZ:
                     if (registers[0] == 0) {
                         if (addr_from_reg) {
-                            if (data[0] < 8) {
-                                pc = registers[data[0]];
-                            } else {
-                                throw proc_err("Register too large.");
-                            }
+                                pc = get_register_value(data[0]);
                         } else {
                             pc = data[0];
                         }
@@ -129,17 +115,13 @@ namespace jop {
             }
 
         }
+        std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
     }
 
 
     dtype Processor::fetch_from_memory(int address, bool from_reg) {
         if (from_reg) {
-            if (address < 8) {
-
-                address = registers[address];
-            } else {
-                throw proc_err("Register too large.");
-            }
+            address = get_register_value(address);
         }
         for (const auto &handler : handlers) {
             if (handler->holds(address)) {
@@ -151,11 +133,7 @@ namespace jop {
 
     void Processor::set_to_memory(int address, dtype data, bool from_reg) {
         if (from_reg) {
-            if (address < 8) {
-                address = registers[address];
-            } else {
-                throw proc_err("Register too large.");
-            }
+            address = get_register_value(address);
         }
         for (auto &handler: handlers) {
             if (handler->holds(address)) {
@@ -174,6 +152,7 @@ namespace jop {
             case Instruction::JP:
             case Instruction::JPZ:
             case Instruction::MVLR:
+            case Instruction::MVRR:
                 return 1;
             default:
                 return 0;
@@ -185,15 +164,32 @@ namespace jop {
 
     }
 
-
-    bool instruction_requires_register(Instruction m) {
-        switch (m) {
-            case Instruction::MVRR:
-                return true;
-            default:
-                return false;
+    dtype Processor::get_register_value(int reg) {
+        if (reg > 7) {
+            throw proc_err(boost::format("Reference to out-of-bounds register %u") % reg);
+        } else {
+            if (reg == 7) {
+                // PC
+                return static_cast<dtype>(pc);
+            } else {
+                return registers[reg];
+            }
         }
     }
+
+    void Processor::set_register(int reg, dtype value) {
+        if (reg > 7) {
+            throw proc_err(boost::format("Reference to out-of-bounds register %u") % reg);
+        } else {
+            if (reg == 7) {
+                // PC
+                pc = value;
+            } else {
+                registers[reg] = value;
+            }
+        }
+    }
+
 
 
 }
