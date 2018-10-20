@@ -200,11 +200,15 @@ public:
                 x->inst = jop::Instruction::OUT;
             } else if (n == "IN") {
                 x->inst = jop::Instruction::INP;
+            } else if (n == "PUSH") {
+                x->inst = jop::Instruction::PUSH;
+                x->reg = readRegisterSpace().reg;
+            } else if (n == "POP") {
+                x->inst = jop::Instruction::POP;
+                x->reg = readRegisterSpace().reg;
             } else {
-
                 cry("Expecting instruction", inst_tok);
             }
-
             return x;
         }
     }

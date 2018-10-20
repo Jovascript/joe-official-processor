@@ -6,7 +6,7 @@
 #include <boost/format.hpp>
 #include "lexer.h"
 
-static const std::vector<std::string> registers{"A", "B", "C", "D", "E", "F", "G", "PC"};
+static const std::vector<std::string> registers{"A", "B", "C", "D", "E", "F", "G", "PC", "SP"};
 
 Token::Token(const std::string &identifier) : identifier(identifier) {
     type = tok_identifier;
@@ -45,7 +45,9 @@ void lexer::consumeToken() {
 
     if (next_char == '#' or next_char == '0') {
         std::string numberS;
+        bool hex = false;
         if (next_char == '#') {
+            hex = false;
             consumeChar();
             while (isdigit(next_char)) {
                 numberS += next_char;
@@ -55,6 +57,7 @@ void lexer::consumeToken() {
             // next_char == '0';
             consumeChar();
             if (next_char == 'x' or next_char == 'X') {
+                hex = true;
                 consumeChar();
                 while (isxdigit(next_char)) {
                     numberS += next_char;
@@ -65,9 +68,8 @@ void lexer::consumeToken() {
             }
         }
         if (!numberS.empty()) {
-
             errno = 0;
-            long x = strtol(numberS.c_str(), nullptr, 10);
+            long x = strtol(numberS.c_str(), nullptr, hex ? 16 : 10);
             // Since we did the digits ourselves, it is guaranteed to have produced a number.
             if (errno == ERANGE or x > std::numeric_limits<jop::dtype>::max()) {
                 cry("Number too large");

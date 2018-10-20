@@ -31,7 +31,9 @@ namespace jop {
         JP,
         JPZ,
         OUT,
-        INP
+        INP,
+        PUSH,
+        POP
     };
 
     class Processor {
@@ -56,6 +58,7 @@ namespace jop {
         std::shared_ptr<InputOutputHandler> iohandler;
 
         int pc{0};
+        dtype sp{0};
 
     };
 

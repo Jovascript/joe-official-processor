@@ -22,6 +22,6 @@ namespace jop {
     }
 
     void StandardIOHandler::handle_output(dtype x) {
-        printf("%X", x);
+        printf("[OUT] %X\n", x);
     }
 }

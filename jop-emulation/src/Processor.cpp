@@ -4,7 +4,6 @@
 
 #include "Processor.h"
 #include <boost/format.hpp>
-#include <Processor.h>
 #include <iostream>
 #include "helpers.h"
 
@@ -22,7 +21,6 @@ namespace jop {
 
     void Processor::run() {
         bool halted = false;
-        std::clock_t start = std::clock();
         while (!halted) {
             // Get new instruction
             dtype temp = fetch_from_memory(pc);
@@ -112,10 +110,17 @@ namespace jop {
                 case Instruction::INP:
                     registers[0] = iohandler->handle_input();
                     break;
+                case Instruction::PUSH:
+                    set_to_memory(sp, get_register_value(reg));
+                    sp--;
+                    break;
+                case Instruction::POP:
+                    sp++;
+                    set_register(reg, fetch_from_memory(sp));
+                    break;
             }
 
         }
-        std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
     }
 
 
@@ -165,25 +170,32 @@ namespace jop {
     }
 
     dtype Processor::get_register_value(int reg) {
-        if (reg > 7) {
+        if (reg > 8) {
             throw proc_err(boost::format("Reference to out-of-bounds register %u") % reg);
         } else {
             if (reg == 7) {
                 // PC
                 return static_cast<dtype>(pc);
-            } else {
+            } else if (reg == 8) {
+                // SP
+                return sp;
+            }
+            else {
                 return registers[reg];
             }
         }
     }
 
     void Processor::set_register(int reg, dtype value) {
-        if (reg > 7) {
+        if (reg > 8) {
             throw proc_err(boost::format("Reference to out-of-bounds register %u") % reg);
         } else {
             if (reg == 7) {
                 // PC
                 pc = value;
+            } else if (reg == 8) {
+                // SP
+                sp = value;
             } else {
                 registers[reg] = value;
             }

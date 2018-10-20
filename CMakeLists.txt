@@ -3,6 +3,7 @@ project(JOP)
 
 set(CMAKE_CXX_STANDARD 14)
 
+add_subdirectory(includes/spdlog)
 add_subdirectory(jop-emulation)
 add_subdirectory(jop-emulator)
 add_subdirectory(jop-assembler)

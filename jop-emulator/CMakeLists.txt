@@ -11,4 +11,4 @@ add_executable(jopemulator main.cpp)
 # public include directories we will use those link directories when building
 # helloDemo)
 target_link_libraries(jopemulator
-        PRIVATE Boost::boost jopemulation Boost::program_options Boost::filesystem)
+        PRIVATE Boost::boost jopemulation Boost::program_options Boost::filesystem spdlog::spdlog)
