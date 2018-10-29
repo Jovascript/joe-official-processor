@@ -10,8 +10,8 @@ GenParser(
 
 find_package(ANTLR)
 
-add_executable(jopcode src/main.cpp)
+add_executable(jopcode src/main.cpp src/ast.cpp src/ast.h src/ASTConstructorVisitor.cpp src/ASTConstructorVisitor.h src/computils.h src/computils.cpp src/ASTVisitor.cpp src/ASTVisitor.h)
 target_link_libraries(jopcode
-        PRIVATE ANTLR::runtime ANTLR::generated
+        PRIVATE ANTLR::runtime ANTLR::generated Boost::boost Boost::filesystem Boost::program_options spdlog::spdlog
         )
 

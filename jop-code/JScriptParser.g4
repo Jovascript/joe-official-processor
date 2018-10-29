@@ -8,42 +8,44 @@ main: (NEWLINE | statement)* EOF;
 
 statement: (declaration
     | assignment
-    | if_stmt
-    | while_stmt
-//   | for_stmt
-    | proc_call
-    | proc_def
-    | proc_decl) (NEWLINE | EOF);
+    | ifStmt
+    | whileStmt
+//   | forStmt
+/*    | procCall
+    | procDef
+    | procDecl*/) (NEWLINE | EOF);
 
 declaration: type name=IDENTIFIER ('=' value=expression)?;
 
 assignment: name=IDENTIFIER '=' value=expression;
 
-proc_call: IDENTIFIER '(' arglist ')';
+procCall: IDENTIFIER '(' arglist ')';
 
-proc_decl: ret_type=IDENTIFIER name=IDENTIFIER '(' typed_arglist ')';
+procDecl: ret_type=IDENTIFIER name=IDENTIFIER '(' typedArglist ')';
 
-proc_def: proc_decl block;
+procDef: procDecl block;
 
-if_stmt: 'if' '(' expression ')' block;
-while_stmt: 'while' '(' expression ')' block;
+ifStmt: IF_KW '(' expression ')' block (ELSE_KW block)?;
+whileStmt: 'while' '(' expression ')' block;
+
+
 
 expression:
-    proc_call # proc_call_expr
-    | '!' expression # binary_not
-    | expression ('*' | '/') expression # muldiv_op
-    | expression ('+' | '-') expression # addsub_op
-    | expression ('==' | NEQ_SIGN) expression # eqneq_op
-    | expression '>' expression # gt_op
-    | expression '<' expression # lt_op
-    | expression '&&' expression # binary_and
-    | expression '||' expression # binary_or
-    | '(' expression ')' # grouped_expr
-    | atom # atom_expr
+    procCall # procCallExpr
+    | s=('!' | '-') expression # unaryOp
+    | expression s=('*' | '/') expression # binaryOp
+    | expression s=('+' | '-') expression # binaryOp
+    | expression s=('==' | NEQ_SIGN) expression # binaryOp
+    | expression s='>' expression # binaryOp
+    | expression s='<' expression # binaryOp
+    | expression s='&&' expression # binaryOp
+    | expression s='||' expression # binaryOp
+    | '(' expression ')' # groupedExpr
+    | atom # atomExpr
 ;
 
 atom:
-    '*' IDENTIFIER
+    STAR_CHAR IDENTIFIER
     | IDENTIFIER
     | STRING
     | INTEGER;
@@ -51,7 +53,7 @@ atom:
 block: '{' (NEWLINE | statement)* '}';
 
 arglist: (atom (',' atom)*)?;
-typed_arglist: (type IDENTIFIER (',' type IDENTIFIER)*)?;
+typedArglist: (type IDENTIFIER (',' type IDENTIFIER)*)?;
 
 type: IDENTIFIER pointer='*'?;
 

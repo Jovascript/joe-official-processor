@@ -4,6 +4,11 @@ lexer grammar JScriptLexer;
 int bracket_depth = 0;
 }
 
+
+IF_KW: 'if';
+ELSE_KW: 'else';
+WHILE_KW: 'while';
+
 IDENTIFIER: [\p{Alpha}\p{General_Category=Other_Letter}_] [\p{Alnum}\p{General_Category=Other_Letter}_]*;
 
 STRING: '"' ( '\\"' | ~["\r\n] )* '"'
@@ -46,8 +51,6 @@ DIVIDE_SIGN: '/';
 NEQ_SIGN: '!=' | '<>';
 COMMA: ',';
 
-IF_KW: 'if';
-WHILE_KW: 'while';
 
 
 // Cant skip, since it could be a code block...
