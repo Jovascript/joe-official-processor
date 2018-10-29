@@ -179,8 +179,20 @@ public:
             } else if (n == "NOT") {
                 x->inst = jop::Instruction::NOT;
                 x->reg = readRegisterSpace().reg;
-            } else if (n == "JP" || n == "JPZ") {
-                x->inst = n == "JP" ? jop::Instruction::JP : jop::Instruction::JPZ;
+            } else if (boost::algorithm::starts_with(n, "JP")) {
+                if (n == "JP") {
+                    x->inst = jop::Instruction::JP;
+                } else if (n == "JPNZ") {
+                    x->inst = jop::Instruction::JPNZ;
+                } else if (n == "JPZ") {
+                    x->inst = jop::Instruction::JPZ;
+                } else if (n == "JPP") {
+                    x->inst = jop::Instruction::JPP;
+                } else if (n == "JPN") {
+                    x->inst = jop::Instruction::JPN;
+                } else {
+                    cry("Cannot jump with this flag.", inst_tok);
+                }
 
                 auto tok = readAddressSpace();
                 switch (tok.type) {

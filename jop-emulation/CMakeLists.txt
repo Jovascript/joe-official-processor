@@ -3,7 +3,6 @@ project(jopemulation VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(Boost REQUIRED)
 
 add_library(jopemulation src/constants.cpp src/InputOutputHandler.cpp src/MemoryHandler.cpp src/Processor.cpp src/proc_types.cpp src/helpers.cpp)
 

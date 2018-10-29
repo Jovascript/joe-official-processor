@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(jopemulator)
 
-
-find_package(Boost REQUIRED COMPONENTS program_options filesystem)
-
-
 add_executable(jopemulator main.cpp)
 
 # Link the executable to the Hello library. Since the Hello library has

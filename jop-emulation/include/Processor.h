@@ -12,7 +12,6 @@
 
 
 namespace jop {
-    bool instruction_requires_data(dtype m);
 
     enum class Instruction {
         NOP,
@@ -33,7 +32,10 @@ namespace jop {
         OUT,
         INP,
         PUSH,
-        POP
+        POP,
+        JPNZ,
+        JPP,
+        JPN
     };
 
     class Processor {
@@ -57,7 +59,7 @@ namespace jop {
         std::vector<std::shared_ptr<MemoryHandler>> handlers;
         std::shared_ptr<InputOutputHandler> iohandler;
 
-        int pc{0};
+        unsigned int pc{0};
         dtype sp{0};
 
     };

@@ -9,7 +9,7 @@
 #include <limits>
 
 namespace jop {
-    typedef unsigned short dtype;
+    typedef signed short dtype;
     typedef unsigned char byte;
 
     const long MAX_DTYPE = std::numeric_limits<dtype>::max();

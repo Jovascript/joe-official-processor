@@ -87,23 +87,6 @@ namespace jop {
                 case Instruction::NOT:
                     registers[0] = ~registers[0];
                     break;
-                case Instruction::JP:
-                    if (addr_from_reg) {
-                        pc = get_register_value(data[0]);
-
-                    } else {
-                        pc = data[0];
-                    }
-                    break;
-                case Instruction::JPZ:
-                    if (registers[0] == 0) {
-                        if (addr_from_reg) {
-                                pc = get_register_value(data[0]);
-                        } else {
-                            pc = data[0];
-                        }
-                    }
-                    break;
                 case Instruction::OUT:
                     iohandler->handle_output(registers[0]);
                     break;
@@ -117,6 +100,39 @@ namespace jop {
                 case Instruction::POP:
                     sp++;
                     set_register(reg, fetch_from_memory(sp));
+                    break;
+                case Instruction::JP:
+                case Instruction::JPZ:
+                case Instruction::JPN:
+                case Instruction::JPP:
+                case Instruction::JPNZ:
+                    bool condition_met;
+                    switch (inst) {
+                        case Instruction::JPZ:
+                            condition_met = registers[0] == 0;
+                            break;
+                        case Instruction::JPNZ:
+                            condition_met = registers[0] != 0;
+                            break;
+                        case Instruction::JPP:
+                            condition_met = registers[0] > 0;
+                            break;
+                        case Instruction::JPN:
+                            condition_met = registers[0] < 0;
+                            break;
+                        default:
+                            condition_met = true;
+                            break;
+
+                    }
+                    if (condition_met) {
+                        if (addr_from_reg) {
+                            pc = get_register_value(data[0]);
+
+                        } else {
+                            pc = data[0];
+                        }
+                    }
                     break;
             }
 
@@ -179,8 +195,7 @@ namespace jop {
             } else if (reg == 8) {
                 // SP
                 return sp;
-            }
-            else {
+            } else {
                 return registers[reg];
             }
         }
@@ -201,7 +216,6 @@ namespace jop {
             }
         }
     }
-
 
 
 }

@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 project(jopassembler)
 
 
-find_package(Boost REQUIRED COMPONENTS program_options filesystem)
-
-
 add_executable(jopassembler main.cpp compiler.cpp lexer.cpp compilation_helpers.cpp)
 
 # Link the executable to the Hello library. Since the Hello library has
