@@ -4,9 +4,7 @@ project(JOP)
 set(CMAKE_CXX_STANDARD 14)
 
 find_package(Boost REQUIRED COMPONENTS program_options filesystem)
-
 add_subdirectory(includes/spdlog)
 add_subdirectory(jop-emulation)
 add_subdirectory(jop-emulator)
 add_subdirectory(jop-assembler)
-add_subdirectory(jop-code)

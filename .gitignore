@@ -4,4 +4,4 @@ file.binary
 test.asm
 test.code
 gen/*
-includes/spdlog
+includes/*
